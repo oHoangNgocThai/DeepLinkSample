@@ -5,6 +5,7 @@ import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.thaihn.deeplinksample.databinding.ActivityMainBinding
+import android.thaihn.deeplinksample.deeplink.DeepLinkActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,7 +23,7 @@ class MainActivity : AppCompatActivity() {
         mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         mainBinding.btnSend.setOnClickListener {
-            startActivity(Intent(this, DetailActivity::class.java).apply {
+            startActivity(Intent(this, DeepLinkActivity::class.java).apply {
                 putExtra(Extras.EXTRAS_NAME.name, "Hoang Ngoc Thai")
                 putExtra(Extras.EXTRAS_AGE.name, 20)
             })
