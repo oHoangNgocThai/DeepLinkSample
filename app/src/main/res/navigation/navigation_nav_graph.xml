@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/navigation_nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="android.thaihn.deeplinksample.navigation.fragment.HomeFragment"
+        android:label="HomeFragment">
+        <action
+            android:id="@+id/openContact"
+            app:destination="@id/contactFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/contactFragment"
+        android:name="android.thaihn.deeplinksample.navigation.fragment.ContactFragment"
+        android:label="ContactFragment">
+        <argument
+            android:name="id"
+            app:argType="integer" />
+        <argument
+            android:name="name"
+            app:argType="string" />
+        <deepLink app:uri="app-thaihn://thaihn.com.vn/{id}/{name}" />
+        <action
+            android:id="@+id/openDetail"
+            app:destination="@id/detailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="android.thaihn.deeplinksample.navigation.fragment.DetailFragment"
+        android:label="DetailFragment">
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <deepLink app:uri="app-thaihn://thaihn.com.vn/?title={title}" />
+    </fragment>
+</navigation>

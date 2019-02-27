@@ -33,15 +33,19 @@
                     android:pathPrefix="/DeepLinkSample"
                     android:scheme="https" />
             </intent-filter>
-
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="com-access-store" />
+                <data
+                    android:host="thaihn"
+                    android:scheme="com-access-store" />
             </intent-filter>
+        </activity>
+        <activity android:name=".navigation.NavigationActivity">
+            <nav-graph android:value="@navigation/navigation_nav_graph"/>
         </activity>
     </application>
 

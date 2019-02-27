@@ -9,14 +9,45 @@
         tools:context=".MainActivity">
 
         <Button
-            android:id="@+id/btn_send"
+            android:id="@+id/btn_deep_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="NEXT"
-            android:textSize="20dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:text="DeepLink"
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toTopOf="@+id/btn_navigation"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btn_navigation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DeepLink Navigation"
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toTopOf="@+id/btn_dynamic_link"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_deep_link" />
+
+        <Button
+            android:id="@+id/btn_dynamic_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DynamicLink"
+            android:textAllCaps="false"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btn_navigation" />
     </android.support.constraint.ConstraintLayout>
 </layout>

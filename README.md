@@ -29,9 +29,22 @@ Như vậy việc triển khai của DeepLink sẽ diễn ra ở trong file Andr
       android:pathPrefix="/DeepLinkSample"
       android:scheme="https" />
   </intent-filter>
+  
+  <intent-filter android:label="@string/app_name">
+    <action android:name="android.intent.action.VIEW" />
+  
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+  
+        <data
+            android:scheme="com-access-store"
+            android:host="thaihn" />
+  </intent-filter>
 </activity>
 ```
-Với DeepLink tạo demo ở đây: https://ohoangngocthai.github.io/DeepLinkSample/
+Ở đây Activity này xử lý 2 DeepLink khác nhau:
+* https://ohoangngocthai.github.io/DeepLinkSample/
+* com-access-store://thaihn?id=SHSA_ST01F0000023214P_57&name=HoangNgocThai
 
 Trong đó cần chú ý đến thẻ **data** bao gồm:
 * **scheme**: Là phần thiết yếu nhất để xác định một URI, ít nhất phải có một thuộc tính scheme nằm trong bộ lọc intent-filter. Có thể đặt là http để tiếp nhận link từ web.
@@ -41,44 +54,102 @@ Trong đó cần chú ý đến thẻ **data** bao gồm:
   * **pathPrefix**: Ứng với đường dẫn khớp với phần đầu của đường link.
   * **pathPattern**: Ứng với đường dẫn hoàn chỉnh của đường link nhưng mà nó có thể thêm ký hiệu để biểu tượng cho một ký tự nào đó. Ví dụ như nếu để là (*) thì đại diện cho một chuỗi từ 0 đến nhiều ký tự đã xuất hiện trước đó. Còn để là (.*) thì đại diện cho bất kì chuỗi nào từ 0 đến nhiều ký tự.
 
-## Implement
+> Thông thường Action được để là **View** để tích hợp được việc tìm kiếm của Google. Category cũng thường được để mặc định là **DEFAULT** hoặc là **BROWSABLE**.
+## Implement DeepLink
 
-1. Tạo một **DeepLink* để sử dụng
-Ở đây sử dụng **Github Page* để tạo một host để test. Ở đây mình sử dụng đường link này:
-https://ohoangngocthai.github.io/DeepLinkSample/
-2. Thiết lập bộ lọc **intent-filter** để đón nhận những hoạt động từ intent gửi về.
+Việc triển khai DeepLink cần thông qua các bước sau:
+1. Khai báo **intent-filter** ở trong Activity có thể lắng nghe được DeepLink. (Như ở phần trên)
+2. Nhận dữ liệu trong Activity
+Dữ liệu của data gửi về là một URI, vì vậy chúng ta sẽ lấy được các parameter cần thiết của DeepLink để xử lý bên trong Activity.
+
+Nếu DeepLink có dạng Query như sau: com-access-store://thaihn?id=SHSA_ST01F0000023214P_57&name=HoangNgocThai
 ```
-<activity
-  android:name=".DetailActivity"
-  android:label="@string/app_name"
-  android:launchMode="singleTop">
-  <intent-filter android:label="@string/detail_title">
-    <action android:name="android.intent.action.VIEW" />
+intent.data?.let {
+    val id = it.getQueryParameter(PARAMETER_ID)
+    val name = it.getQueryParameter(PARAMETER_NAME)
+    val text = "$id --- $name"
+    deeplinkBinding.tvId.text = text
+}
+```
+Nếu DeepLink có dạng path như sau: https://ohoangngocthai.github.io/DeepLinkSample/1/thaihn
+```
+intent.data?.let {
+    val value = StringBuilder()
+    it.pathSegments.forEach {
+    value.append("$it-")
+    }
+    deeplinkBinding.tvId.text = value
+}
+```
 
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    
-    <data
-      android:host="ohoangngocthai.github.io"
-      android:pathPrefix="/DeepLinkSample"
-      android:scheme="https" />
-  </intent-filter>
+3. Kiểm tra xem đã xử lý đúng chưa bằng adb hoặc trực tiếp gửi link qua.
+```
+adb shell am start -a android.intent.action.VIEW -d "https://ohoangngocthai.github.io/DeepLinkSample/"
+adb shell am start -a android.intent.action.VIEW -d "https://ohoangngocthai.github.io/DeepLinkSample/2/thaihn"
+```
+
+> Việc xử lý lấy dữ liệu này nên được thực hiện trong hàm onNewIntent() bởi vì khi được gọi lại nhiều lần mà không cần tạo ra một instance mới.
+
+## DeepLink với Navigation Component
+Navigation Component là công cụ quản lý ứng dụng của bạn thông qua các Fragment và chỉ có một Activity chính quản lý các destination của nó. Bạn có thể tìm hiểu thêm về nó ở [đây](https://developer.android.com/topic/libraries/architecture/navigation/navigation-implementing)
+
+1. Thêm DeepLink vào trong Destination
+Sử dụng code hoặc là giao diện trong file **nav_graph.xml** như sau:
+
+```
+<fragment
+        android:id="@+id/contactFragment"
+        android:name="android.thaihn.deeplinksample.navigation.fragment.ContactFragment"
+        android:label="ContactFragment">
+        <argument
+            android:name="id"
+            app:argType="integer" />
+        <argument
+            android:name="name"
+            app:argType="string" />
+        <deepLink app:uri="app-thaihn://thaihn.com.vn/{id}/{name}" />
+        <action
+            android:id="@+id/openDetail"
+            app:destination="@id/detailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="android.thaihn.deeplinksample.navigation.fragment.DetailFragment"
+        android:label="DetailFragment">
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <deepLink app:uri="app-thaihn://thaihn.com.vn/?title={title}" />
+    </fragment>
+```
+
+> Navigation Component cũng hỗ trợ việc sử dụng DeepLink với dạng **Query** hoặc là **Path** đối với URI được tạo.
+
+2. Khai báo trong **AndroidManifest.xml**
+Chúng ta phải khai báo trong Activity chứa Navigation Graph để có thể lắng nghe được:
+```
+<activity android:name=".navigation.NavigationActivity">
+    <nav-graph android:value="@navigation/navigation_nav_graph"/>
 </activity>
-``` 
-Chúng ta nên để Action View để tích hợp được việc tìm kiếm của Google. Category cũng thường được để mặc định là DEFAULT hoặc là BROWSABLE.
-
+```
 3. Nhận dữ liệu
-Chúng ta nhận dữ liệu của data gửi về là một URI, nên để lấy được dữ liệu chứa trong đường link thì bạn chỉ cần cắt chuỗi để tìm được dữ liệu cần thiết từ **DeepLink** gửi về và hiển thị trên Activity đón nhận nó.
+Việc nhận dữ liệu từ DeepLink cũng sẽ đơn giản với **Plugin SafeArgs** hỗ trợ cùng với Navigation Component 
 ```
-val action = intent.action
-val data = intent.dataString
-```
+arguments?.let {
+    val id = ContactFragmentArgs.fromBundle(it).id
+    val name = ContactFragmentArgs.fromBundle(it).name
+
+    val text = "$id -- $name"
+    contactBinding.tvContact.text = text
+}
+```  
+
+## DynamicLink của FireBase
+
 # Running the tests
 Có 2 cách để test được DeepLink có thể kể đến là sử dụng **ADB** hoặc là trực tiếp sử dụng link đó trên các ứng dụng khác hoặc trên web để có thể mở ứng dụng có trong máy.
 * **ADB**: Sử dụng adb để test,chỉ cần mở terminal của Android Studio lên và gõ lệnh sau:
-```
-adb shell am start -a android.intent.action.VIEW -d "https://ohoangngocthai.github.io/DeepLinkSample/"
-```
+
 * Test trực tiếp là gửi đường link này qua tin nhắn, gmail, web thì khi click vào sẽ mở được ứng dụng với màn hình đón nhận nó.
 
 
