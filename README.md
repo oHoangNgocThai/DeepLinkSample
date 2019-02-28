@@ -145,7 +145,62 @@ arguments?.let {
 ```  
 
 ## DynamicLink của FireBase
+DynamicLink FireBase là các link liên kết hoạt động theo cách bạn muốn, nó sử dụng được trên nhiều nền tảng và cho dù ứng dụng của bạn đã được cài đặt hay chưa.
+Việc triển khai Dynamic Link sẽ như sau:
+1. Tạo project FireBase và cài đặt **Dynamic Link SDK** 
+* Liên kết Project với FireBase có thể tham khảo ở [đây](https://firebase.google.com/docs/android/setup)
+* Thêm dependencies của Dynamic Link vào app build.gradle
+```
+implementation 'com.google.firebase:firebase-invites:16.1.0'
+implementation 'com.google.firebase:firebase-dynamic-links:16.1.7'
+```
+2. Tạo một **Dynamic Link**
 
+> Tạo một Dynamic Link bạn cần truy cập vào FireBase console và vào phần **Grow/Dynamic Links** để tạo một URL prefix cho Link của bạn. Ở đây mình tạo lấy một domain như sau: https://thaihn.page.link
+Sau đó bạn có thể tạo các DeepLink khác nhau ở trên FireBase console. Có thể lựa chọn mở trên trình duyệt hay từ một nền tảng khác như Android hay Ios.
+
+* Sort Link mình tạo ra như sau: https://thaihn.page.link/dynamic
+* Đây là link mình tạo demo: https://thaihn.vn/dynamic/1?name=HoangNgocThai
+
+3. Xử lý **Dynamic Link** bên trong ứng dụng 
+
+* Như vậy bạn chỉ cần xử lý nhận của Dynamic Link đối với link rút gọn ở trong **AndroidManifest.xml**
+```
+<intent-filter android:label="@string/dynamic_link_title">
+    <action android:name="android.intent.action.VIEW" />
+
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+
+    <data
+        android:host="thaihn.page.link"
+        android:pathPrefix="/dynamic"
+        android:scheme="https" />
+</intent-filter>
+```
+
+* Đọc dữ liệu ở trong Activity như sau: 
+```
+FirebaseDynamicLinks.getInstance()
+    .getDynamicLink(intent)
+    .addOnSuccessListener(this) {
+        it?.link?.let { uri ->
+            val name = uri.getQueryParameter(PARAMETER_NAME)
+            val path = StringBuilder()
+            uri.pathSegments?.forEach { it ->
+                path.append(it)
+            }
+            dynamicLinkBinding.tvId.text = "name:$name - id:$path"
+        }
+    }
+    .addOnFailureListener(this) {
+        it.printStackTrace()
+            dynamicLinkBinding.tvId.text = it.message
+    }
+```
+
+4. Xem những dữ liệu tổng hợp trên FireBase console
+Bạn có thể xem những dữ liệu thống kê về lượt click đầu tiên hoặc là các lần mở lại sau đó. 
 # Running the tests
 Có 2 cách để test được DeepLink có thể kể đến là sử dụng **ADB** hoặc là trực tiếp sử dụng link đó trên các ứng dụng khác hoặc trên web để có thể mở ứng dụng có trong máy.
 * **ADB**: Sử dụng adb để test,chỉ cần mở terminal của Android Studio lên và gõ lệnh sau:
