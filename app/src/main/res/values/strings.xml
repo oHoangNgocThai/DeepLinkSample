@@ -7,4 +7,5 @@
     <string name="dynamic_link_title">Dynamic Link</string>
     <string name="navigation_title">Navigation</string>
     <string name="deep_link_title">DeepLink</string>
+    <string name="invite_link_title">Invite Link</string>
 </resources>

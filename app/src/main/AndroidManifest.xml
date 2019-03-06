@@ -45,19 +45,19 @@
             </intent-filter>
         </activity>
 
-        <!--Navigation Activity-->
+        <!-- Navigation Activity -->
         <activity
             android:name=".navigation.NavigationActivity"
             android:label="@string/navigation_title">
+
             <nav-graph android:value="@navigation/navigation_nav_graph" />
         </activity>
 
-        <!--Dynamic Link Activity-->
+        <!-- Dynamic Link Activity -->
         <activity
             android:name=".dynamiclink.DynamicLinkActivity"
             android:label="@string/dynamic_link_title"
             android:launchMode="singleTop">
-
             <intent-filter android:label="@string/dynamic_link_title">
                 <action android:name="android.intent.action.VIEW" />
 
@@ -67,6 +67,22 @@
                 <data
                     android:host="thaihn.page.link"
                     android:pathPrefix="/dynamic"
+                    android:scheme="https" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".dynamiclink.InviteLinkActivity"
+            android:label="@string/invite_link_title"
+            android:launchMode="singleTop">
+            <intent-filter android:label="@string/dynamic_link_title">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="thaihn.page.link"
+                    android:pathPrefix="/invite"
                     android:scheme="https" />
             </intent-filter>
         </activity>

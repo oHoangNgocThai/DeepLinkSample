@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.thaihn.deeplinksample.databinding.ActivityMainBinding
 import android.thaihn.deeplinksample.deeplink.DeepLinkActivity
-import android.thaihn.deeplinksample.R
+import android.thaihn.deeplinksample.dynamiclink.DynamicLinkActivity
 import android.thaihn.deeplinksample.navigation.NavigationActivity
 
 class MainActivity : AppCompatActivity() {
@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mainBinding.btnDynamicLink.setOnClickListener {
+            startActivity(Intent(this, DynamicLinkActivity::class.java))
         }
     }
 }

@@ -200,7 +200,12 @@ FirebaseDynamicLinks.getInstance()
 ```
 
 4. Xem những dữ liệu tổng hợp trên FireBase console
-Bạn có thể xem những dữ liệu thống kê về lượt click đầu tiên hoặc là các lần mở lại sau đó. 
+Bạn có thể xem những dữ liệu thống kê về lượt click đầu tiên hoặc là các lần mở lại sau đó trên [FireBase console](https://console.firebase.google.com) 
+
+### Invite Link
+* Bạn có thể sử dụng Dynamic Link để chia sẻ với người khác sử dụng ứng dụng. 
+
+
 # Running the tests
 Có 2 cách để test được DeepLink có thể kể đến là sử dụng **ADB** hoặc là trực tiếp sử dụng link đó trên các ứng dụng khác hoặc trên web để có thể mở ứng dụng có trong máy.
 * **ADB**: Sử dụng adb để test,chỉ cần mở terminal của Android Studio lên và gõ lệnh sau:
