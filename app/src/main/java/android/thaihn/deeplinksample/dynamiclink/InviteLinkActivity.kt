@@ -26,7 +26,6 @@ class InviteLinkActivity : AppCompatActivity() {
                 .addOnSuccessListener(this) { data ->
 
                     val deepLink = data.link
-                    Log.d(TAG, "deeplink: $deepLink")
                     val invite = FirebaseAppInvite.getInvitation(data)
                     if (invite != null) {
                         Log.d(TAG, "invite ${invite.toString()}")

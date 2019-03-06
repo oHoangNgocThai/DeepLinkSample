@@ -147,6 +147,7 @@ arguments?.let {
 ## DynamicLink của FireBase
 DynamicLink FireBase là các link liên kết hoạt động theo cách bạn muốn, nó sử dụng được trên nhiều nền tảng và cho dù ứng dụng của bạn đã được cài đặt hay chưa.
 Việc triển khai Dynamic Link sẽ như sau:
+### Dynamic Links
 1. Tạo project FireBase và cài đặt **Dynamic Link SDK** 
 * Liên kết Project với FireBase có thể tham khảo ở [đây](https://firebase.google.com/docs/android/setup)
 * Thêm dependencies của Dynamic Link vào app build.gradle
@@ -203,13 +204,113 @@ FirebaseDynamicLinks.getInstance()
 Bạn có thể xem những dữ liệu thống kê về lượt click đầu tiên hoặc là các lần mở lại sau đó trên [FireBase console](https://console.firebase.google.com) 
 
 ### Invite Link
-* Bạn có thể sử dụng Dynamic Link để chia sẻ với người khác sử dụng ứng dụng. 
+* Bạn có thể sử dụng Dynamic Link để chia sẻ với người khác sử dụng ứng dụng bằng cách tạo link invite của mình gửi đến bạn bè như sau:
+```
+fun generateContentLink(): Uri {
+    val baseUrl = Uri.parse("https://thaihn.vn/invite?id=1111&name=NgocThai")
+    val domain = "https://thaihn.page.link"
 
+    val link = FirebaseDynamicLinks.getInstance()
+        .createDynamicLink()
+        .setLink(baseUrl)
+        .setDomainUriPrefix(domain)
+        .setIosParameters(DynamicLink.IosParameters.Builder("android.thaihn.deeplinksample").build())
+        .setAndroidParameters(DynamicLink.AndroidParameters.Builder("android.thaihn.deeplinksample").build())
+        .buildDynamicLink()
 
-# Running the tests
-Có 2 cách để test được DeepLink có thể kể đến là sử dụng **ADB** hoặc là trực tiếp sử dụng link đó trên các ứng dụng khác hoặc trên web để có thể mở ứng dụng có trong máy.
-* **ADB**: Sử dụng adb để test,chỉ cần mở terminal của Android Studio lên và gõ lệnh sau:
+    return link.uri
+}
+```
+* Sau đó xử lý việc lấy dữ liệu bên trong Activity muốn handle như sau:
+```
+FirebaseDynamicLinks.getInstance()
+    .getDynamicLink(intent)
+    .addOnSuccessListener(this) { data ->
 
-* Test trực tiếp là gửi đường link này qua tin nhắn, gmail, web thì khi click vào sẽ mở được ứng dụng với màn hình đón nhận nó.
+        val deepLink = data.link
+        val invite = FirebaseAppInvite.getInvitation(data)
+        if (invite != null) {
+            Log.d(TAG, "invite ${invite.toString()}")
+            val id = invite.invitationId
+            inviteLinkBinding.tvId.text = id
+        }
+    }
+    .addOnFailureListener(this) {
+        it.printStackTrace()
+        inviteLinkBinding.tvId.text = it.toString()
+    }
+```
+### Reward referrals
+Một trong những chức năng hay của Dynamic Link là việc xử lý giới thiệu người và thưởng cho người giới thiệu bạn cài ứng dụng.
+1. Tạo Deeplink chứa id của người giới thiệu có dạng như sau:
+```
+https://mygame.example.com/?invitedby=SENDER_UID
+```
+Để tạo được link trên, chúng ta xử dụng trong code như sau:
+```
+val user = FirebaseAuth.getInstance().currentUser
+val uid = user!!.uid
+val link = "https://mygame.example.com/?invitedby=$uid"
+FirebaseDynamicLinks.getInstance().createDynamicLink()
+    .setLink(Uri.parse(link))
+    .setDomainUriPrefix("https://example.page.link")
+    .setAndroidParameters(
+        DynamicLink.AndroidParameters.Builder("com.example.android")
+            .setMinimumVersion(125)
+            .build())
+    .setIosParameters(
+        DynamicLink.IosParameters.Builder("com.example.ios")
+            .setAppStoreId("123456789")
+            .setMinimumVersion("1.0.1")
+            .build())
+    .buildShortDynamicLink()
+    .addOnSuccessListener { shortDynamicLink ->
+        mInvitationUrl = shortDynamicLink.shortLink
+            // ...
+}
+```
+2. Gửi đường link đã tạo cho người dùng khác
+Bạn có thể gửi link qua Email, SMS, Facebook, ... tùy thuộc vào ứng dụng có trong máy của bạn.
+Dưới đây mô tả việc gửi mail để giới thiệu người cài ứng dụng:
+```
+val referrerName = FirebaseAuth.getInstance().currentUser?.displayName
+val subject = String.format("%s wants you to play MyExampleGame!", referrerName)
+val invitationLink = mInvitationUrl.toString()
+val msg = "Let's play MyExampleGame together! Use my referrer link: $invitationLink"
+val msgHtml = String.format("<p>Let's play MyExampleGame together! Use my " +
+        "<a href=\"%s\">referrer link</a>!</p>", invitationLink)
 
+val intent = Intent(Intent.ACTION_SENDTO)
+intent.data = Uri.parse("mailto:") // only email apps should handle this
+intent.putExtra(Intent.EXTRA_SUBJECT, subject)
+intent.putExtra(Intent.EXTRA_TEXT, msg)
+intent.putExtra(Intent.EXTRA_HTML_TEXT, msgHtml)
+if (intent.resolveActivity(packageManager) != null) {
+    startActivity(intent)
+}
+```
+3. Nhận dữ liệu trong activity
+Nhận dữ liệu ở đây để lấy được id của người đã gửi cho mình lời giới thiêu, sau đó xử lý việc lưu lại và tặng thưởng, ...
+
+```
+FirebaseDynamicLinks.getInstance()
+    .getDynamicLink(intent)
+    .addOnSuccessListener(this) { pendingDynamicLinkData ->
+        // Get deep link from result (may be null if no link is found)
+        var deepLink: Uri? = null
+        if (pendingDynamicLinkData != null) {
+            deepLink = pendingDynamicLinkData.link
+        }
+        // If the user isn't signed in and the pending Dynamic Link is
+        // an invitation, sign in the user anonymously, and record the
+        // referrer's UID.
+        //
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null && deepLink != null && deepLink.getBooleanQueryParameter("invitedby", false)) {
+            val referrerUid = deepLink.getQueryParameter("invitedby")
+            createAnonymousAccountWithReferrerInfo(referrerUid)
+        }
+    }
+}
+```
 
